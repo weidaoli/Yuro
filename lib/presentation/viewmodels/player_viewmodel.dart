@@ -134,14 +134,19 @@ class PlayerViewModel extends ChangeNotifier {
 
   Future<void> playPause() async {
     if (_isPlaying) {
-      _audioService.pause();
+      await _audioService.pause();
     } else {
-      _audioService.resume();
+      await _audioService.resume();
     }
   }
 
+  // 防御性 clamp：ExoPlayer 对负数/超时长 seek 会抛 IllegalArgumentException（主线程崩溃）
   Future<void> seek(Duration position) async {
-    await _audioService.seek(position);
+    var target = position;
+    if (target < Duration.zero) target = Duration.zero;
+    final d = _duration;
+    if (d != null && target > d) target = d;
+    await _audioService.seek(target);
   }
 
   Future<void> previous() async {

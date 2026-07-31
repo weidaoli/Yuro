@@ -91,7 +91,26 @@ class PlaybackController {
     try {
       AppLogger.debug('准备设置播放上下文: workId=${context.work.id}, file=${context.currentFile.title}');
       AppLogger.debug('播放列表状态: 长度=${context.playlist.length}, 当前索引=${context.currentIndex}');
-      
+
+      // 过滤掉没有下载地址的文件，避免 mediaDownloadUrl! 强解包崩溃；
+      // 同时保证播放源与 _stateManager 中保存的播放列表保持一致。
+      final playableFiles = context.playlist
+          .where((f) => f.mediaDownloadUrl != null)
+          .toList();
+      if (playableFiles.length != context.playlist.length) {
+        AppLogger.debug('过滤掉 ${context.playlist.length - playableFiles.length} 个无下载地址的文件');
+        final newIndex = playableFiles
+            .indexWhere((f) => f.title == context.currentFile.title);
+        context = PlaybackContext.withPlaylist(
+          work: context.work,
+          files: context.files,
+          currentFile: context.currentFile,
+          playlist: playableFiles,
+          currentIndex: newIndex >= 0 ? newIndex : 0,
+          playMode: context.playMode,
+        );
+      }
+
       // 验证上下文
       try {
         context.validate();

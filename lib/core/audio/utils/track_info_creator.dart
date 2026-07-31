@@ -22,7 +22,7 @@ class TrackInfoCreator {
       title: file.title ?? '',
       artistName: work.circle?.name,
       coverUrl: work.mainCoverUrl,
-      url: file.mediaDownloadUrl!,
+      url: file.mediaDownloadUrl ?? '',
     );
   }
 } 

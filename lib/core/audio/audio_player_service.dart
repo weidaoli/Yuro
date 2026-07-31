@@ -43,6 +43,7 @@ class AudioPlayerService implements IAudioPlayerService {
   }
 
   Future<void> _init() async {
+    // 核心播放器对象创建：失败则直接降级，避免 late final 字段未初始化导致后续崩溃
     try {
       _player = AudioPlayer();
       _notificationService = AudioNotificationService(
@@ -62,13 +63,6 @@ class AudioPlayerService implements IAudioPlayerService {
         stateManager: _stateManager,
         playlist: _playlist,
       );
-
-      final session = await AudioSession.instance;
-      await session.configure(const AudioSessionConfiguration.music());
-      await _notificationService.init();
-
-      _stateManager.initStateListeners();
-      await restorePlaybackState();
     } catch (e, stack) {
       AudioErrorHandler.handleError(
         AudioErrorType.init,
@@ -76,10 +70,33 @@ class AudioPlayerService implements IAudioPlayerService {
         e,
         stack,
       );
-      AudioErrorHandler.throwError(
+      return; // 降级：不再抛出，避免成为 unhandled async exception
+    }
+
+    // 音频会话/通知栏服务：失败只影响后台播放能力，不影响基础播放
+    try {
+      final session = await AudioSession.instance;
+      await session.configure(const AudioSessionConfiguration.music());
+      await _notificationService.init();
+    } catch (e, stack) {
+      AudioErrorHandler.handleError(
         AudioErrorType.init,
-        '音频播放器初始化',
+        '音频会话/通知栏初始化',
         e,
+        stack,
+      );
+    }
+
+    // 状态监听/恢复：失败不影响本次会话的播放
+    try {
+      _stateManager.initStateListeners();
+      await restorePlaybackState();
+    } catch (e, stack) {
+      AudioErrorHandler.handleError(
+        AudioErrorType.init,
+        '播放状态监听/恢复',
+        e,
+        stack,
       );
     }
   }
@@ -144,10 +161,14 @@ class AudioPlayerService implements IAudioPlayerService {
         return;
       }
 
-      final context = PlaybackContext(
+      // 使用保存的播放列表/索引恢复，避免按文件名重新匹配导致 index=-1。
+      // 位置在 PlaylistBuilder 内部会按实际时长 clamp，防止越界崩溃。
+      final context = PlaybackContext.withPlaylist(
         work: state.work,
         files: state.files,
         currentFile: state.currentFile,
+        playlist: state.playlist,
+        currentIndex: state.currentIndex,
         playMode: state.playMode,
       );
 

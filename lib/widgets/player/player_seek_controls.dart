@@ -5,6 +5,19 @@ import 'package:asmrapp/presentation/viewmodels/player_viewmodel.dart';
 class PlayerSeekControls extends StatelessWidget {
   const PlayerSeekControls({super.key});
 
+  // 相对跳转必须 clamp 到 [0, duration]，否则负数/超时长 seek 会让
+  // ExoPlayer 抛 IllegalArgumentException（主线程崩溃）
+  void _seekRelative(PlayerViewModel viewModel, Duration delta) {
+    final position = viewModel.position;
+    if (position == null) return;
+
+    var target = position + delta;
+    if (target < Duration.zero) target = Duration.zero;
+    final duration = viewModel.duration;
+    if (duration != null && target > duration) target = duration;
+    viewModel.seek(target);
+  }
+
   @override
   Widget build(BuildContext context) {
     final viewModel = GetIt.I<PlayerViewModel>();
@@ -16,23 +29,13 @@ class PlayerSeekControls extends StatelessWidget {
         IconButton(
           icon: const Icon(Icons.replay_30),
           iconSize: 24,
-          onPressed: () {
-            final position = viewModel.position;
-            if (position != null) {
-              viewModel.seek(position - const Duration(seconds: 30));
-            }
-          },
+          onPressed: () => _seekRelative(viewModel, const Duration(seconds: -30)),
         ),
         // 后退5s
         IconButton(
           icon: const Icon(Icons.replay_5),
           iconSize: 24,
-          onPressed: () {
-            final position = viewModel.position;
-            if (position != null) {
-              viewModel.seek(position - const Duration(seconds: 5));
-            }
-          },
+          onPressed: () => _seekRelative(viewModel, const Duration(seconds: -5)),
         ),
         // 上一句歌词
         IconButton(
@@ -50,23 +53,13 @@ class PlayerSeekControls extends StatelessWidget {
         IconButton(
           icon: const Icon(Icons.forward_5),
           iconSize: 24,
-          onPressed: () {
-            final position = viewModel.position;
-            if (position != null) {
-              viewModel.seek(position + const Duration(seconds: 5));
-            }
-          },
+          onPressed: () => _seekRelative(viewModel, const Duration(seconds: 5)),
         ),
         // 快进30s
         IconButton(
           icon: const Icon(Icons.forward_30),
           iconSize: 24,
-          onPressed: () {
-            final position = viewModel.position;
-            if (position != null) {
-              viewModel.seek(position + const Duration(seconds: 30));
-            }
-          },
+          onPressed: () => _seekRelative(viewModel, const Duration(seconds: 30)),
         ),
       ],
     );

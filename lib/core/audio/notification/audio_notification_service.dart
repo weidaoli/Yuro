@@ -24,8 +24,13 @@ class AudioNotificationService {
         config: const AudioServiceConfig(
           androidNotificationChannelId: 'com.asmrapp.audio',
           androidNotificationChannelName: 'ASMR One 播放器',
-          androidNotificationOngoing: true,
-          androidStopForegroundOnPause: true,
+          // audio_service 断言：androidNotificationOngoing 与 androidStopForegroundOnPause
+          // 不能同时为 true/false 组合，故关闭 ongoing。
+          // 暂停时不停止前台服务：
+          // 1) Android 12+ 从后台重启 mediaPlayback 前台服务受限，暂停后再播放会失败；
+          // 2) 保持前台服务可避免切后台后进程被系统回收。
+          androidNotificationOngoing: false,
+          androidStopForegroundOnPause: false,
         ),
       );
 

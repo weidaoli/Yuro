@@ -6,6 +6,7 @@ import android.content.Intent
 import android.graphics.PixelFormat
 import android.os.Binder
 import android.os.IBinder
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -44,6 +45,10 @@ class LyricOverlayService : Service() {
     }
     
     fun showLyric(text: String) {
+        // 没有悬浮窗权限时直接忽略，避免 addView 抛 SecurityException 导致原生崩溃
+        if (!Settings.canDrawOverlays(this)) {
+            return
+        }
         if (lyricView == null) {
             createLyricView()
         }
@@ -111,7 +116,13 @@ class LyricOverlayService : Service() {
             true
         }
         
-        windowManager?.addView(lyricView, params)
+        // addView 可能因权限/窗口类型问题抛异常，必须捕获，避免原生线程崩溃杀死应用
+        try {
+            windowManager?.addView(lyricView, params)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            lyricView = null
+        }
     }
     
     private fun Int.dpToPx(): Int {

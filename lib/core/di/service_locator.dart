@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:asmrapp/core/platform/dummy_lyric_overlay_controller.dart';
 import 'package:get_it/get_it.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../audio/i_audio_player_service.dart';
 import '../audio/audio_player_service.dart';
 import '../../data/services/api_service.dart';
@@ -94,6 +95,23 @@ Future<void> setupServiceLocator() async {
 
   // 注册 WakeLockController
   getIt.registerLazySingleton(() => WakeLockController(prefs));
+
+  // Android 13+ 需要运行时授权才能显示通知（后台播放依赖通知栏）
+  if (Platform.isAndroid) {
+    _requestNotificationPermission();
+  }
+}
+
+/// 请求通知权限（异步，不阻塞启动；失败静默）
+Future<void> _requestNotificationPermission() async {
+  try {
+    final status = await Permission.notification.status;
+    if (status.isDenied || status.isPermanentlyDenied) {
+      await Permission.notification.request();
+    }
+  } catch (e) {
+    // 忽略权限请求失败，不影响核心功能
+  }
 }
 
 Future<void> setupSubtitleServices() async {

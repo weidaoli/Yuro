@@ -67,6 +67,26 @@ class PlaybackContext {
     );
   }
 
+  /// 使用显式播放列表创建上下文。
+  /// 用于：恢复播放状态（保留保存的播放列表/索引）或过滤掉无效文件后的播放。
+  factory PlaybackContext.withPlaylist({
+    required Work work,
+    required Files files,
+    required Child currentFile,
+    required List<Child> playlist,
+    required int currentIndex,
+    PlayMode playMode = PlayMode.sequence,
+  }) {
+    return PlaybackContext._(
+      work: work,
+      files: files,
+      currentFile: currentFile,
+      playlist: List.unmodifiable(playlist),
+      currentIndex: currentIndex,
+      playMode: playMode,
+    );
+  }
+
   // 获取同级文件列表
   static List<Child> _getPlaylistFromSameDirectory(Child currentFile, Files files) {
     // AppLogger.debug('开始获取播放列表...');
