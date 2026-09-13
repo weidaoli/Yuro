@@ -5,7 +5,7 @@ import 'package:shimmer/shimmer.dart';
 class PlayerCover extends StatelessWidget {
   final String? coverUrl;
   final double? maxWidth;
-  
+
   const PlayerCover({
     super.key,
     this.coverUrl,
@@ -14,50 +14,62 @@ class PlayerCover extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return AspectRatio(
-      aspectRatio: 4/3,
+      aspectRatio: 4 / 3,
       child: Container(
-        constraints: BoxConstraints(
-          maxWidth: maxWidth ?? 480,
-        ),
+        constraints: BoxConstraints(maxWidth: maxWidth ?? 480),
         decoration: BoxDecoration(
-          color: Colors.grey[300],
-          borderRadius: BorderRadius.circular(12),
+          color: colors.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(28),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
+              color: colors.primary.withOpacity(0.18),
+              blurRadius: 36,
+              spreadRadius: -8,
+              offset: const Offset(0, 18),
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(28),
           child: coverUrl != null
               ? CachedNetworkImage(
                   imageUrl: coverUrl!,
                   fit: BoxFit.cover,
-                  placeholder: (context, url) => Shimmer.fromColors(
-                    baseColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-                    highlightColor: Theme.of(context).colorScheme.surface,
-                    child: Container(
-                      color: Colors.white,
-                    ),
+                  placeholder: (_, __) => Shimmer.fromColors(
+                    baseColor: colors.surfaceContainerHighest,
+                    highlightColor: colors.surfaceContainer,
+                    child: Container(color: Colors.white),
                   ),
-                  errorWidget: (context, url, error) => Container(
-                    color: Theme.of(context).colorScheme.errorContainer,
-                    child: Center(
-                      child: Icon(
-                        Icons.error_outline,
-                        size: 48,
-                        color: Theme.of(context).colorScheme.error,
-                      ),
+                  errorWidget: (_, __, ___) => Container(
+                    color: colors.errorContainer,
+                    child: Icon(
+                      Icons.image_not_supported_outlined,
+                      size: 48,
+                      color: colors.error,
                     ),
                   ),
                 )
-              : const Icon(Icons.music_note, size: 100),
+              : DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        colors.primaryContainer,
+                        colors.secondaryContainer
+                      ],
+                    ),
+                  ),
+                  child: Center(
+                    child: Icon(Icons.graphic_eq_rounded,
+                        size: 82, color: colors.primary),
+                  ),
+                ),
         ),
       ),
     );
   }
-} 
+}

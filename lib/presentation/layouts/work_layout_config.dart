@@ -26,14 +26,14 @@ class WorkLayoutConfig {
   static const int mobileColumns = 2;
 
   // 间距
-  static const double desktopSpacing = 16;
-  static const double tabletSpacing = 12;
-  static const double mobileSpacing = 8;
+  static const double desktopSpacing = 20;
+  static const double tabletSpacing = 16;
+  static const double mobileSpacing = 12;
 
   // 内边距
-  static const EdgeInsets desktopPadding = EdgeInsets.all(16);
-  static const EdgeInsets tabletPadding = EdgeInsets.all(12);
-  static const EdgeInsets mobilePadding = EdgeInsets.all(8);
+  static const EdgeInsets desktopPadding = EdgeInsets.all(24);
+  static const EdgeInsets tabletPadding = EdgeInsets.all(18);
+  static const EdgeInsets mobilePadding = EdgeInsets.fromLTRB(12, 10, 12, 20);
 
   const WorkLayoutConfig._();
 

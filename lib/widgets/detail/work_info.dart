@@ -8,10 +8,7 @@ import 'package:asmrapp/utils/logger.dart';
 class WorkInfo extends StatelessWidget {
   final Work work;
 
-  const WorkInfo({
-    super.key,
-    required this.work,
-  });
+  const WorkInfo({super.key, required this.work});
 
   String _getLocalizedTagName(Tag tag) {
     final zhName = tag.i18n?.zhCn?.name;
@@ -24,36 +21,39 @@ class WorkInfo extends StatelessWidget {
   void _onTagTap(BuildContext context, Tag tag) {
     final keyword = tag.name ?? '';
     if (keyword.isEmpty) return;
-
     AppLogger.debug('点击标签: $keyword');
-    Navigator.pushNamed(
-      context,
-      '/search',
-      arguments: keyword,
-    );
+    Navigator.pushNamed(context, '/search', arguments: keyword);
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          WorkInfoHeader(work: work),
-          const SizedBox(height: 8),
-          if (work.tags != null && work.tags!.isNotEmpty)
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: work.tags!
-                  .map((tag) => TagChip(
-                        text: _getLocalizedTagName(tag),
-                        onTap: () => _onTagTap(context, tag),
-                      ))
-                  .toList(),
-            ),
-        ],
+      padding: const EdgeInsets.fromLTRB(12, 14, 12, 12),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              WorkInfoHeader(work: work),
+              if (work.tags?.isNotEmpty == true) ...[
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: work.tags!
+                      .map(
+                        (tag) => TagChip(
+                          text: _getLocalizedTagName(tag),
+                          onTap: () => _onTagTap(context, tag),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }

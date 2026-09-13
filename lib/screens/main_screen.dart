@@ -13,13 +13,6 @@ import 'package:asmrapp/presentation/viewmodels/recommend_viewmodel.dart';
 import 'package:asmrapp/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:asmrapp/presentation/viewmodels/playlists_viewmodel.dart';
 
-/// MainScreen 是应用的主界面，负责管理底部导航栏和对应的内容页面。
-/// 它采用了集中式的状态管理架构，所有子页面的 ViewModel 都在这里初始化和提供。
-///
-/// 架构说明：
-/// 1. ViewModel 初始化：所有页面的 ViewModel 都在 MainScreen 中初始化，确保单一实例
-/// 2. 状态提供：通过 MultiProvider 将 ViewModel 提供给整个子树
-/// 3. 生命周期管理：负责所有 ViewModel 的创建和销毁
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -31,18 +24,14 @@ class _MainScreenState extends State<MainScreen> {
   final _pageController = PageController(initialPage: 1);
   int _currentIndex = 1;
 
-  // 集中管理所有页面的 ViewModel
-  // 这些 ViewModel 将通过 Provider 提供给子页面
   late final HomeViewModel _homeViewModel;
   late final PopularViewModel _popularViewModel;
   late final RecommendViewModel _recommendViewModel;
   late final PlaylistsViewModel _playlistsViewModel;
 
-  final _titles = const ['收藏', '主页', '为你推荐', '热门作品'];
+  final _titles = const ['我的收藏', '发现声音', '为你推荐', '本周热门'];
+  final _eyebrows = const ['COLLECTION', 'Y U R O', 'FOR YOU', 'TRENDING'];
 
-  // 页面内容列表
-  // 注意：这些页面不应该创建自己的 ViewModel 实例
-  // 而是应该通过 Provider.of 或 context.read 获取 MainScreen 提供的实例
   final _pages = const [
     PlaylistsContent(),
     HomeContent(),
@@ -53,8 +42,6 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
-    // 初始化所有 ViewModel
-    // 注意初始化顺序，如果有依赖关系需要先初始化依赖项
     _homeViewModel = HomeViewModel();
     _popularViewModel = PopularViewModel();
     _recommendViewModel = RecommendViewModel(
@@ -63,23 +50,28 @@ class _MainScreenState extends State<MainScreen> {
     _playlistsViewModel = PlaylistsViewModel();
   }
 
-  void _onPageChanged(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-  }
+  void _onPageChanged(int index) => setState(() => _currentIndex = index);
 
   void _onTabTapped(int index) {
     _pageController.animateToPage(
       index,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeOutCubic,
     );
+  }
+
+  void _toggleFilter(BuildContext context) {
+    if (_currentIndex == 1) {
+      context.read<HomeViewModel>().toggleFilterPanel();
+    } else if (_currentIndex == 2) {
+      context.read<RecommendViewModel>().toggleFilterPanel();
+    } else if (_currentIndex == 3) {
+      context.read<PopularViewModel>().toggleFilterPanel();
+    }
   }
 
   @override
   void dispose() {
-    // 确保所有 ViewModel 都被正确释放
     _pageController.dispose();
     _homeViewModel.dispose();
     _popularViewModel.dispose();
@@ -91,8 +83,6 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      // 通过 MultiProvider 将所有 ViewModel 提供给子树
-      // 这样子页面就可以通过 Provider.of 或 context.read 获取对应的 ViewModel
       providers: [
         ChangeNotifierProvider.value(value: _homeViewModel),
         ChangeNotifierProvider.value(value: _popularViewModel),
@@ -101,7 +91,6 @@ class _MainScreenState extends State<MainScreen> {
       ],
       child: Builder(
         builder: (context) {
-          // 根据当前页面获取对应的总数
           final totalCount = _currentIndex == 1
               ? context.watch<HomeViewModel>().pagination?.totalCount
               : _currentIndex == 2
@@ -109,38 +98,73 @@ class _MainScreenState extends State<MainScreen> {
                   : _currentIndex == 3
                       ? context.watch<PopularViewModel>().pagination?.totalCount
                       : null;
-
-          // 构建标题文本
-          final title = totalCount != null
-              ? '${_titles[_currentIndex]} (${totalCount})'
-              : _titles[_currentIndex];
+          final colors = Theme.of(context).colorScheme;
 
           return Scaffold(
             appBar: AppBar(
-              title: Text(title),
+              toolbarHeight: 74,
+              titleSpacing: 4,
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _eyebrows[_currentIndex],
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: colors.primary,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.5,
+                        ),
+                  ),
+                  const SizedBox(height: 2),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(_titles[_currentIndex]),
+                      if (totalCount != null) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: colors.primaryContainer,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text(
+                            '$totalCount',
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall
+                                ?.copyWith(
+                                  color: colors.primary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
               actions: [
-                IconButton(
-                  icon: const Icon(Icons.filter_list),
-                  onPressed: () {
-                    if (_currentIndex == 1) {
-                      context.read<HomeViewModel>().toggleFilterPanel();
-                    } else if (_currentIndex == 2) {
-                      context.read<RecommendViewModel>().toggleFilterPanel();
-                    } else if (_currentIndex == 3) {
-                      context.read<PopularViewModel>().toggleFilterPanel();
-                    }
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.search),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SearchScreen(),
-                      ),
-                    );
-                  },
+                if (_currentIndex != 0)
+                  IconButton(
+                    tooltip: '筛选',
+                    icon: const Icon(Icons.tune_rounded),
+                    onPressed: () => _toggleFilter(context),
+                  ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: IconButton.filledTonal(
+                    tooltip: '搜索',
+                    icon: const Icon(Icons.search_rounded),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const SearchScreen()),
+                      );
+                    },
+                  ),
                 ),
               ],
             ),
@@ -151,45 +175,50 @@ class _MainScreenState extends State<MainScreen> {
               onPageChanged: _onPageChanged,
               children: _pages,
             ),
-            bottomNavigationBar: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const MiniPlayer(),
-                NavigationBar(
-                  height: 60,
-                  labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
-                  backgroundColor: Theme.of(context).colorScheme.surface,
-                  elevation: 0,
-                  selectedIndex: _currentIndex,
-                  onDestinationSelected: _onTabTapped,
-                  destinations: const [
-                    NavigationDestination(
-                      icon: Icon(Icons.favorite_outline),
-                      selectedIcon: Icon(Icons.favorite),
-                      label: '收藏',
-                    ),
-                    NavigationDestination(
-                      icon: Icon(Icons.home_outlined),
-                      selectedIcon: Icon(Icons.home),
-                      label: '主页',
-                    ),
-                    NavigationDestination(
-                      icon: Icon(Icons.recommend_outlined),
-                      selectedIcon: Icon(Icons.recommend),
-                      label: '推荐',
-                    ),
-                    NavigationDestination(
-                      icon: Icon(Icons.trending_up_outlined),
-                      selectedIcon: Icon(Icons.trending_up),
-                      label: '热门',
-                    ),
-                  ],
+            bottomNavigationBar: DecoratedBox(
+              decoration: BoxDecoration(
+                color: colors.surfaceContainer,
+                border: Border(
+                  top: BorderSide(
+                      color: colors.outlineVariant.withOpacity(0.55)),
                 ),
-              ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const MiniPlayer(),
+                  NavigationBar(
+                    selectedIndex: _currentIndex,
+                    onDestinationSelected: _onTabTapped,
+                    destinations: const [
+                      NavigationDestination(
+                        icon: Icon(Icons.favorite_outline_rounded),
+                        selectedIcon: Icon(Icons.favorite_rounded),
+                        label: '收藏',
+                      ),
+                      NavigationDestination(
+                        icon: Icon(Icons.explore_outlined),
+                        selectedIcon: Icon(Icons.explore_rounded),
+                        label: '发现',
+                      ),
+                      NavigationDestination(
+                        icon: Icon(Icons.auto_awesome_outlined),
+                        selectedIcon: Icon(Icons.auto_awesome_rounded),
+                        label: '推荐',
+                      ),
+                      NavigationDestination(
+                        icon: Icon(Icons.local_fire_department_outlined),
+                        selectedIcon: Icon(Icons.local_fire_department_rounded),
+                        label: '热门',
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           );
         },
       ),
     );
   }
-} 
+}

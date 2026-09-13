@@ -1,94 +1,86 @@
 import 'package:flutter/material.dart';
 import 'package:asmrapp/data/models/works/work.dart';
-import 'package:asmrapp/data/models/works/tag.dart';
 
 class WorkTagsPanel extends StatelessWidget {
   final Work work;
 
-  const WorkTagsPanel({
-    super.key,
-    required this.work,
-  });
-
-  String _getLocalizedTagName(Tag tag) {
-    final zhName = tag.i18n?.zhCn?.name;
-    if (zhName != null) return zhName;
-    final jaName = tag.i18n?.jaJp?.name;
-    if (jaName != null) return jaName;
-    return tag.name ?? '';
-  }
+  const WorkTagsPanel({super.key, required this.work});
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 4,
-      runSpacing: 2,
-      children: [
-        if (work.circle?.name != null)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: Colors.orange.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(4),
-            ),
+    final colors = Theme.of(context).colorScheme;
+    final chips = <Widget>[];
+
+    if (work.circle?.name?.isNotEmpty == true) {
+      chips.add(_MiniTag(
+        label: work.circle!.name!,
+        color: colors.secondaryContainer,
+        textColor: colors.onSecondaryContainer,
+      ));
+    }
+    if (work.vas?.isNotEmpty == true) {
+      chips.add(_MiniTag(
+        label: work.vas!.first['name'] ?? '',
+        color: colors.primaryContainer,
+        textColor: colors.onPrimaryContainer,
+      ));
+    }
+    if (work.hasSubtitle == true) {
+      chips.add(_MiniTag(
+        label: '字幕',
+        icon: Icons.closed_caption_rounded,
+        color: colors.surfaceContainerHighest,
+        textColor: colors.onSurfaceVariant,
+      ));
+    }
+
+    return Wrap(spacing: 5, runSpacing: 5, children: chips.take(3).toList());
+  }
+}
+
+class _MiniTag extends StatelessWidget {
+  final String label;
+  final IconData? icon;
+  final Color color;
+  final Color textColor;
+
+  const _MiniTag({
+    required this.label,
+    required this.color,
+    required this.textColor,
+    this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 11, color: textColor),
+            const SizedBox(width: 3),
+          ],
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 78),
             child: Text(
-              work.circle?.name ?? '',
-              style: TextStyle(
-                fontSize: 10,
-                color: Colors.orange[700],
-              ),
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: textColor,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w600,
+                  ),
             ),
           ),
-        ...?work.vas?.map((va) => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                va['name'] ?? '',
-                style: TextStyle(
-                  fontSize: 10,
-                  color: Colors.green[700],
-                ),
-              ),
-            )),
-        if (work.hasSubtitle == true)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              '字幕',
-              style: TextStyle(
-                fontSize: 10,
-                color: Colors.blue[700],
-              ),
-            ),
-          ),
-        ...work.tags
-                ?.map((tag) => Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        _getLocalizedTagName(tag),
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ))
-                .toList() ??
-            [],
-      ],
+        ],
+      ),
     );
   }
 }

@@ -33,7 +33,7 @@ class FilterPanel extends StatelessWidget {
       case 'rate_average_2dp':
         return '评价';
       case 'review_count':
-        return '评论数量';
+        return '评论数';
       case 'id':
         return 'RJ号';
       case 'rating':
@@ -49,128 +49,74 @@ class FilterPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Row(
-          children: [
-            // 字幕过滤
-            Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
-                ),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Material(
-                type: MaterialType.transparency,
-                child: InkWell(
-                  onTap: () => onSubtitleChanged(!hasSubtitle),
-                  borderRadius: BorderRadius.circular(7),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          hasSubtitle ? Icons.check_box : Icons.check_box_outline_blank,
-                          size: 20,
-                          color: hasSubtitle 
-                              ? Theme.of(context).colorScheme.primary 
-                              : Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '有字幕',
-                          style: TextStyle(
-                            color: hasSubtitle 
-                                ? Theme.of(context).colorScheme.primary 
-                                : Theme.of(context).colorScheme.onSurface,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+      child: Row(
+        children: [
+          FilterChip(
+            selected: hasSubtitle,
+            avatar: Icon(
+              hasSubtitle
+                  ? Icons.closed_caption_rounded
+                  : Icons.closed_caption_off_outlined,
+              size: 18,
             ),
-            const SizedBox(width: 8),
-            // 排序字段
-            Container(
+            label: const Text('有字幕'),
+            onSelected: onSubtitleChanged,
+          ),
+          const SizedBox(width: 8),
+          PopupMenuButton<String>(
+            onSelected: onOrderFieldChanged,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+            itemBuilder: (_) => [
+              _item('收录时间', 'create_date'),
+              _item('发售日期', 'release'),
+              _item('销量', 'dl_count'),
+              _item('价格', 'price'),
+              _item('评价', 'rate_average_2dp'),
+              _item('评论数', 'review_count'),
+              _item('RJ号', 'id'),
+              _item('我的评价', 'rating'),
+              _item('全年龄', 'nsfw'),
+              _item('随机', 'random'),
+            ],
+            child: Container(
+              height: 40,
+              padding: const EdgeInsets.symmetric(horizontal: 13),
               decoration: BoxDecoration(
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
-                ),
-                borderRadius: BorderRadius.circular(8),
+                color: colors.surfaceContainerHigh,
+                borderRadius: BorderRadius.circular(999),
               ),
-              child: PopupMenuButton<String>(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(_getOrderFieldText(orderField)),
-                      const SizedBox(width: 4),
-                      const Icon(Icons.arrow_drop_down, size: 20),
-                    ],
-                  ),
-                ),
-                itemBuilder: (context) => [
-                  _buildOrderMenuItem('收录时间', 'create_date'),
-                  _buildOrderMenuItem('发售日期', 'release'),
-                  _buildOrderMenuItem('销量', 'dl_count'),
-                  _buildOrderMenuItem('价格', 'price'),
-                  _buildOrderMenuItem('评价', 'rate_average_2dp'),
-                  _buildOrderMenuItem('评论数量', 'review_count'),
-                  _buildOrderMenuItem('RJ号', 'id'),
-                  _buildOrderMenuItem('我的评价', 'rating'),
-                  _buildOrderMenuItem('全年龄', 'nsfw'),
-                  _buildOrderMenuItem('随机', 'random'),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.swap_vert_rounded, size: 18),
+                  const SizedBox(width: 7),
+                  Text(_getOrderFieldText(orderField)),
+                  const SizedBox(width: 2),
+                  const Icon(Icons.arrow_drop_down_rounded, size: 20),
                 ],
               ),
             ),
-            const SizedBox(width: 8),
-            // 排序方向
-            Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
-                ),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Material(
-                type: MaterialType.transparency,
-                child: InkWell(
-                  onTap: () => onSortDirectionChanged(!isDescending),
-                  borderRadius: BorderRadius.circular(7),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(isDescending ? '降序' : '升序'),
-                        const SizedBox(width: 4),
-                        Icon(
-                          isDescending ? Icons.arrow_downward : Icons.arrow_upward,
-                          size: 20,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+          ),
+          const SizedBox(width: 8),
+          ActionChip(
+            avatar: Icon(
+              isDescending ? Icons.south_rounded : Icons.north_rounded,
+              size: 17,
             ),
-          ],
-        ),
+            label: Text(isDescending ? '降序' : '升序'),
+            onPressed: () => onSortDirectionChanged(!isDescending),
+          ),
+        ],
       ),
     );
   }
 
-  PopupMenuItem<String> _buildOrderMenuItem(String text, String value) {
-    return PopupMenuItem(
-      value: value,
-      child: Text(text),
-    );
+  PopupMenuItem<String> _item(String text, String value) {
+    return PopupMenuItem(value: value, child: Text(text));
   }
-} 
+}

@@ -16,20 +16,21 @@ class TagChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(999),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: backgroundColor ?? Theme.of(context).colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(4),
+          color: backgroundColor ?? colors.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(999),
         ),
         child: Text(
           text,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: textColor ?? Theme.of(context).colorScheme.onSurfaceVariant,
-                fontSize: 13,
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: textColor ?? colors.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
               ),
         ),
       ),

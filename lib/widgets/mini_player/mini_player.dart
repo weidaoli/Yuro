@@ -7,8 +7,8 @@ import 'package:get_it/get_it.dart';
 import 'mini_player_cover.dart';
 
 class MiniPlayer extends StatelessWidget {
-  static const height = 48.0;
-  
+  static const height = 72.0;
+
   const MiniPlayer({super.key});
 
   @override
@@ -17,99 +17,106 @@ class MiniPlayer extends StatelessWidget {
     return ListenableBuilder(
       listenable: viewModel,
       builder: (context, _) {
-        return GestureDetector(
-          onTap: () {
-            Navigator.of(context).push(
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) {
-                  return const PlayerScreen();
-                },
-                transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                  // 创建一个曲线动画
-                  final curvedAnimation = CurvedAnimation(
-                    parent: animation,
-                    curve: Curves.easeOutQuart,
-                  );
-                  
-                  return Stack(
-                    children: [
-                      // 背景淡入效果
-                      FadeTransition(
-                        opacity: curvedAnimation,
-                        child: Container(
-                          color: Theme.of(context).scaffoldBackgroundColor,
-                        ),
+        final colors = Theme.of(context).colorScheme;
+        final hasTrack = viewModel.currentTrackInfo != null;
+
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              Navigator.of(context).push(
+                PageRouteBuilder(
+                  pageBuilder: (_, __, ___) => const PlayerScreen(),
+                  transitionsBuilder: (_, animation, __, child) {
+                    final curved = CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    );
+                    return FadeTransition(
+                      opacity: curved,
+                      child: SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0, 0.16),
+                          end: Offset.zero,
+                        ).animate(curved),
+                        child: child,
                       ),
-                      // 内容从底部滑入并淡入
-                      FadeTransition(
-                        opacity: Tween<double>(
-                          begin: 0.3,
-                          end: 1.0,
-                        ).animate(curvedAnimation),
-                        child: SlideTransition(
-                          position: Tween<Offset>(
-                            begin: const Offset(0, 0.3),
-                            end: Offset.zero,
-                          ).animate(curvedAnimation),
-                          child: child,
-                        ),
-                      ),
-                    ],
-                  );
-                },
-                transitionDuration: const Duration(milliseconds: 400),
-              ),
-            );
-          },
-          child: Container(
-            height: height,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, -1),
+                    );
+                  },
+                  transitionDuration: const Duration(milliseconds: 360),
                 ),
-              ],
-            ),
-            child: Column(
-              children: [
-                const MiniPlayerProgress(),
-                Expanded(
-                  child: Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 4, 8, 4),
-                        child: Hero(
-                          tag: 'mini-player-cover',
-                          child: MiniPlayerCover(
-                            coverUrl: viewModel.currentTrackInfo?.coverUrl,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Hero(
-                            tag: 'player-title',
-                            child: Material(
-                              color: Colors.transparent,
-                              child: Text(
-                                viewModel.currentTrackInfo?.title ?? '未在播放',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context).textTheme.titleSmall,
-                              ),
+              );
+            },
+            child: SizedBox(
+              height: height,
+              child: Column(
+                children: [
+                  const MiniPlayerProgress(),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
+                      child: Row(
+                        children: [
+                          Hero(
+                            tag: 'mini-player-cover',
+                            child: MiniPlayerCover(
+                              coverUrl: viewModel.currentTrackInfo?.coverUrl,
+                              size: 50,
                             ),
                           ),
-                        ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Hero(
+                                  tag: 'player-title',
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: Text(
+                                      viewModel.currentTrackInfo?.title ??
+                                          '还没有播放内容',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleSmall
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  hasTrack
+                                      ? viewModel.currentTrackInfo?.artist ??
+                                          '正在聆听'
+                                      : '选一个作品，开始你的声场',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(
+                                        color: colors.onSurfaceVariant,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const MiniPlayerControls(),
+                          Icon(
+                            Icons.keyboard_arrow_up_rounded,
+                            color: colors.onSurfaceVariant,
+                          ),
+                        ],
                       ),
-                      const MiniPlayerControls(),
-                    ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );

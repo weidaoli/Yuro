@@ -26,36 +26,49 @@ class WorkActionButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _ActionButton(
-            icon: Icons.favorite_border,
-            label: '收藏',
-            onTap: onFavoriteTap,
-            loading: loadingFavorite,
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+          child: Row(
+            children: [
+              Expanded(
+                child: _ActionButton(
+                  icon: Icons.favorite_outline_rounded,
+                  label: '收藏',
+                  onTap: onFavoriteTap,
+                  loading: loadingFavorite,
+                ),
+              ),
+              Expanded(
+                child: _ActionButton(
+                  icon: Icons.bookmark_border_rounded,
+                  label: currentMarkStatus?.label ?? '标记',
+                  onTap: onMarkTap,
+                  loading: loadingMark,
+                ),
+              ),
+              const Expanded(
+                child: _ActionButton(
+                  icon: Icons.star_outline_rounded,
+                  label: '评分',
+                ),
+              ),
+              Expanded(
+                child: _ActionButton(
+                  icon: Icons.auto_awesome_outlined,
+                  label: checkingRecommendations
+                      ? '检查中'
+                      : hasRecommendations
+                          ? '相关推荐'
+                          : '暂无推荐',
+                  onTap: hasRecommendations ? onRecommendationsTap : null,
+                  loading: checkingRecommendations,
+                ),
+              ),
+            ],
           ),
-          _ActionButton(
-            icon: Icons.bookmark_border,
-            label: currentMarkStatus?.label ?? '标记',
-            onTap: onMarkTap,
-            loading: loadingMark,
-          ),
-          _ActionButton(
-            icon: Icons.star_border,
-            label: '评分',
-            onTap: () {
-              // TODO: 实现评分功能
-            },
-          ),
-          _ActionButton(
-            icon: Icons.recommend,
-            label: checkingRecommendations ? '检查中' : (hasRecommendations ? '相关推荐' : '暂无推荐'),
-            onTap: hasRecommendations ? onRecommendationsTap : null,
-            loading: checkingRecommendations,
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -76,45 +89,52 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final colors = Theme.of(context).colorScheme;
     final disabled = onTap == null && !loading;
-    
+
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(16),
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 8),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (loading)
-              SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: theme.colorScheme.primary,
-                ),
-              )
-            else
-              Icon(
-                icon,
-                color: disabled 
-                    ? theme.colorScheme.onSurface.withOpacity(0.38)
-                    : null,
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: disabled
+                    ? colors.surfaceContainerHigh
+                    : colors.primaryContainer,
+                borderRadius: BorderRadius.circular(14),
               ),
-            const SizedBox(height: 4),
+              child: loading
+                  ? Padding(
+                      padding: const EdgeInsets.all(11),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: colors.primary,
+                      ),
+                    )
+                  : Icon(
+                      icon,
+                      size: 21,
+                      color: disabled ? colors.outline : colors.primary,
+                    ),
+            ),
+            const SizedBox(height: 6),
             Text(
               label,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: disabled
-                    ? theme.colorScheme.onSurface.withOpacity(0.38)
-                    : null,
-              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: disabled ? colors.outline : colors.onSurface,
+                  ),
             ),
           ],
         ),
       ),
     );
   }
-} 
+}

@@ -1,51 +1,68 @@
 import 'package:flutter/material.dart';
 
-/// 应用颜色配置
+/// Yuro 的品牌色与语义色。
+///
+/// 颜色灵感来自夜间聆听：低亮度墨色承载内容，月光紫用于主操作，
+/// 雾粉色只作为少量强调，避免长时间观看时产生视觉疲劳。
 class AppColors {
-  // 禁止实例化
   const AppColors._();
 
-  // 亮色主题颜色
-  static const ColorScheme lightColorScheme = ColorScheme.light(
-    // 基础色调
-    primary: Color(0xFF6750A4),
+  static const moonViolet = Color(0xFF8B7CF6);
+  static const blushPink = Color(0xFFF08FAE);
+  static const midnightInk = Color(0xFF111016);
+  static const softMist = Color(0xFFF8F7FC);
+  static const deepSurface = Color(0xFF1A1821);
+  static const lightSurface = Color(0xFFFFFFFF);
+
+  static final ColorScheme lightColorScheme = ColorScheme.fromSeed(
+    seedColor: moonViolet,
+    brightness: Brightness.light,
+  ).copyWith(
+    primary: const Color(0xFF6658D3),
     onPrimary: Colors.white,
-    
-    // 表面颜色
-    surface: Colors.white,
-    surfaceVariant: Color(0xFFF4F4F4),
-    onSurface: Colors.black87,
-    surfaceContainerHighest: Color(0xFFE6E6E6),
-    
-    // 背景颜色
-    background: Colors.white,
-    onBackground: Colors.black87,
-    
-    // 错误状态颜色
-    error: Color(0xFFB3261E),
-    errorContainer: Color(0xFFF9DEDC),
-    onError: Colors.white,
+    primaryContainer: const Color(0xFFEAE6FF),
+    onPrimaryContainer: const Color(0xFF211B58),
+    secondary: const Color(0xFFB65378),
+    onSecondary: Colors.white,
+    secondaryContainer: const Color(0xFFFFD9E4),
+    onSecondaryContainer: const Color(0xFF431126),
+    tertiary: const Color(0xFF566F9C),
+    surface: softMist,
+    surfaceContainer: lightSurface,
+    surfaceContainerLow: const Color(0xFFF2F0F8),
+    surfaceContainerHigh: const Color(0xFFECEAF3),
+    surfaceContainerHighest: const Color(0xFFE4E1EC),
+    onSurface: const Color(0xFF1C1B20),
+    onSurfaceVariant: const Color(0xFF66616F),
+    outline: const Color(0xFF7B7585),
+    outlineVariant: const Color(0xFFD0CCD8),
+    error: const Color(0xFFBA1A1A),
+    errorContainer: const Color(0xFFFFDAD6),
   );
 
-  // 暗色主题颜色
-  static const ColorScheme darkColorScheme = ColorScheme.dark(
-    // 基础色调
-    primary: Color(0xFFD0BCFF),
-    onPrimary: Color(0xFF381E72),
-    
-    // 表面颜色
-    surface: Color(0xFF1C1B1F),
-    surfaceVariant: Color(0xFF2B2930),
-    onSurface: Colors.white,
-    surfaceContainerHighest: Color(0xFF2B2B2B),
-    
-    // 背景颜色
-    background: Color(0xFF1C1B1F),
-    onBackground: Colors.white,
-    
-    // 错误状态颜色
-    error: Color(0xFFF2B8B5),
-    errorContainer: Color(0xFF8C1D18),
-    onError: Color(0xFF601410),
+  static final ColorScheme darkColorScheme = ColorScheme.fromSeed(
+    seedColor: moonViolet,
+    brightness: Brightness.dark,
+  ).copyWith(
+    primary: const Color(0xFFB9AEFF),
+    onPrimary: const Color(0xFF30256F),
+    primaryContainer: const Color(0xFF493E92),
+    onPrimaryContainer: const Color(0xFFE7E1FF),
+    secondary: const Color(0xFFFFABC4),
+    onSecondary: const Color(0xFF5D1833),
+    secondaryContainer: const Color(0xFF762D49),
+    onSecondaryContainer: const Color(0xFFFFD9E4),
+    tertiary: const Color(0xFFB7C8F4),
+    surface: midnightInk,
+    surfaceContainer: deepSurface,
+    surfaceContainerLow: const Color(0xFF17151C),
+    surfaceContainerHigh: const Color(0xFF24212D),
+    surfaceContainerHighest: const Color(0xFF302C3A),
+    onSurface: const Color(0xFFEAE6EF),
+    onSurfaceVariant: const Color(0xFFC9C3D2),
+    outline: const Color(0xFF938D9D),
+    outlineVariant: const Color(0xFF484451),
+    error: const Color(0xFFFFB4AB),
+    errorContainer: const Color(0xFF93000A),
   );
-} 
+}

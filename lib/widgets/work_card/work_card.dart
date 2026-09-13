@@ -15,27 +15,25 @@ class WorkCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
     return Card(
-      clipBehavior: Clip.antiAlias,
-      elevation: isDark ? 0 : 1,
-      color: isDark 
-          ? Theme.of(context).colorScheme.surfaceVariant
-          : Theme.of(context).colorScheme.surface,
       child: InkWell(
         onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            WorkCoverImage(
-              imageUrl: work.mainCoverUrl ?? '',
-              workId: work.id ?? 0,
-              sourceId: work.sourceId ?? '',
+            Hero(
+              tag: 'work-cover-${work.id}',
+              child: Material(
+                type: MaterialType.transparency,
+                child: WorkCoverImage(
+                  imageUrl: work.mainCoverUrl ?? '',
+                  workId: work.id ?? 0,
+                  sourceId: work.sourceId ?? '',
+                ),
+              ),
             ),
-            Expanded(
-              child: WorkInfoSection(work: work),
-            ),
+            Expanded(child: WorkInfoSection(work: work)),
           ],
         ),
       ),

@@ -7,34 +7,27 @@ import 'package:asmrapp/utils/logger.dart';
 class WorkInfoHeader extends StatelessWidget {
   final Work work;
 
-  const WorkInfoHeader({
-    super.key,
-    required this.work,
-  });
+  const WorkInfoHeader({super.key, required this.work});
 
   void _onTagTap(BuildContext context, String keyword) {
     if (keyword.isEmpty) return;
-
     AppLogger.debug('点击标签: $keyword');
-    Navigator.pushNamed(
-      context,
-      '/search',
-      arguments: keyword,
-    );
+    Navigator.pushNamed(context, '/search', arguments: keyword);
   }
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           work.title ?? '',
-          style: Theme.of(context).textTheme.titleMedium,
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(height: 1.3),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         WorkStatsInfo(work: work),
-        const SizedBox(height: 8),
+        const SizedBox(height: 14),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -42,27 +35,27 @@ class WorkInfoHeader extends StatelessWidget {
             if (work.circle?.name != null)
               TagChip(
                 text: work.circle?.name ?? '',
-                backgroundColor: Colors.orange.withOpacity(0.2),
-                textColor: Colors.orange[700],
+                backgroundColor: colors.secondaryContainer,
+                textColor: colors.onSecondaryContainer,
                 onTap: () => _onTagTap(context, work.circle?.name ?? ''),
               ),
-            ...?work.vas?.map(
-              (va) => TagChip(
-                text: va['name'] ?? '',
-                backgroundColor: Colors.green.withOpacity(0.2),
-                textColor: Colors.green[700],
-                onTap: () => _onTagTap(context, va['name'] ?? ''),
-              ),
-            ),
+            ...?work.vas?.take(3).map(
+                  (va) => TagChip(
+                    text: va['name'] ?? '',
+                    backgroundColor: colors.primaryContainer,
+                    textColor: colors.onPrimaryContainer,
+                    onTap: () => _onTagTap(context, va['name'] ?? ''),
+                  ),
+                ),
             if (work.hasSubtitle == true)
               TagChip(
                 text: '字幕',
-                backgroundColor: Colors.blue.withOpacity(0.2),
-                textColor: Colors.blue[700],
+                backgroundColor: colors.surfaceContainerHighest,
+                textColor: colors.onSurfaceVariant,
               ),
           ],
         ),
       ],
     );
   }
-} 
+}

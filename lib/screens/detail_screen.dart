@@ -23,24 +23,40 @@ class DetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => DetailViewModel(
-        work: work,
-      )..loadFiles(),
+      create: (_) => DetailViewModel(work: work)..loadFiles(),
       child: Scaffold(
         appBar: AppBar(
-          title: Text(work.sourceId ?? ''),
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('作品详情'),
+              if ((work.sourceId ?? '').isNotEmpty)
+                Text(
+                  work.sourceId!,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
+            ],
+          ),
         ),
         body: SingleChildScrollView(
-          padding: const EdgeInsets.only(bottom: MiniPlayer.height),
+          padding: const EdgeInsets.only(bottom: 18),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              WorkCover(
-                imageUrl: work.mainCoverUrl ?? '',
-                workId: work.id ?? 0,
-                sourceId: work.sourceId ?? '',
-                releaseDate: work.release,
-                heroTag: 'work-cover-${work.id}',
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(26),
+                  child: WorkCover(
+                    imageUrl: work.mainCoverUrl ?? '',
+                    workId: work.id ?? 0,
+                    sourceId: work.sourceId ?? '',
+                    releaseDate: work.release,
+                    heroTag: 'work-cover-${work.id}',
+                  ),
+                ),
               ),
               WorkInfo(work: work),
               Consumer<DetailViewModel>(
@@ -50,17 +66,16 @@ class DetailScreen extends StatelessWidget {
                   onRecommendationsTap: () {
                     Navigator.of(context).push(
                       PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) =>
+                        pageBuilder: (_, __, ___) =>
                             SimilarWorksScreen(work: work),
-                        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                          const begin = Offset(1.0, 0.0);
-                          const end = Offset.zero;
-                          const curve = Curves.easeInOut;
-                          var tween = Tween(begin: begin, end: end).chain(
-                            CurveTween(curve: curve),
-                          );
+                        transitionsBuilder: (_, animation, __, child) {
                           return SlideTransition(
-                            position: animation.drive(tween),
+                            position: Tween(
+                              begin: const Offset(1, 0),
+                              end: Offset.zero,
+                            )
+                                .chain(CurveTween(curve: Curves.easeOutCubic))
+                                .animate(animation),
                             child: child,
                           );
                         },
@@ -76,44 +91,43 @@ class DetailScreen extends StatelessWidget {
               ),
               Consumer<DetailViewModel>(
                 builder: (context, viewModel, _) {
-                  if (viewModel.isLoading) {
-                    return const WorkFilesSkeleton();
-                  }
-
+                  if (viewModel.isLoading) return const WorkFilesSkeleton();
                   if (viewModel.error != null) {
-                    return Center(
-                      child: Text(
-                        viewModel.error!,
-                        style: TextStyle(
-                            color: Theme.of(context).colorScheme.error),
+                    return Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Center(
+                        child: Text(
+                          viewModel.error!,
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.error),
+                        ),
                       ),
                     );
                   }
-
                   if (viewModel.files != null) {
                     return WorkFilesList(
                       files: viewModel.files!,
                       onFileTap: (file) async {
                         try {
                           await viewModel.playFile(file, context);
-                        } catch (e) {
+                        } catch (error) {
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('播放失败: $e')),
+                              SnackBar(content: Text('播放失败: $error')),
                             );
                           }
                         }
                       },
                     );
                   }
-
                   return const SizedBox.shrink();
                 },
               ),
+              const SizedBox(height: 18),
             ],
           ),
         ),
-        bottomSheet: const MiniPlayer(),
+        bottomNavigationBar: const MiniPlayer(),
       ),
     );
   }

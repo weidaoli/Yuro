@@ -30,61 +30,44 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   Widget _buildContent() {
     return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 400),
-      switchInCurve: Curves.easeOutQuart,
-      switchOutCurve: Curves.easeInQuart,
-      transitionBuilder: (Widget child, Animation<double> animation) {
-        final isLyrics = (child as dynamic).key == const ValueKey('lyrics');
-        
+      duration: const Duration(milliseconds: 360),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.easeInCubic,
+      transitionBuilder: (child, animation) {
+        final isLyrics = child.key == const ValueKey('lyrics');
         return FadeTransition(
           opacity: animation,
           child: SlideTransition(
             position: Tween<Offset>(
-              begin: Offset(0, isLyrics ? 0.1 : -0.1),
+              begin: Offset(0, isLyrics ? 0.06 : -0.06),
               end: Offset.zero,
             ).animate(animation),
-            child: ScaleTransition(
-              scale: Tween<double>(
-                begin: 0.95,
-                end: 1.0,
-              ).animate(animation),
-              child: child,
-            ),
+            child: child,
           ),
         );
       },
-      layoutBuilder: (currentChild, previousChildren) {
-        return Stack(
-          alignment: Alignment.center,
-          children: <Widget>[
-            ...previousChildren,
-            if (currentChild != null) currentChild,
-          ],
-        );
-      },
+      layoutBuilder: (currentChild, previousChildren) => Stack(
+        alignment: Alignment.center,
+        children: [...previousChildren, if (currentChild != null) currentChild],
+      ),
       child: _showLyrics
-          ? LayoutBuilder(
+          ? PlayerLyricView(
               key: const ValueKey('lyrics'),
-              builder: (context, constraints) {
-                return PlayerLyricView(
-                  onScrollStateChanged: (canSwitch) {
-                    setState(() {
-                      _canSwitchView = canSwitch;
-                    });
-                  },
-                );
+              onScrollStateChanged: (canSwitch) {
+                setState(() => _canSwitchView = canSwitch);
               },
             )
           : ListenableBuilder(
+              key: const ValueKey('cover'),
               listenable: _viewModel,
               builder: (context, _) {
+                final colors = Theme.of(context).colorScheme;
                 return Column(
-                  key: const ValueKey('cover'),
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 12),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                      padding: const EdgeInsets.symmetric(horizontal: 26),
                       child: Hero(
                         tag: 'mini-player-cover',
                         child: PlayerCover(
@@ -92,9 +75,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 28),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                      padding: const EdgeInsets.symmetric(horizontal: 30),
                       child: Column(
                         children: [
                           Hero(
@@ -102,31 +85,36 @@ class _PlayerScreenState extends State<PlayerScreen> {
                             child: Material(
                               color: Colors.transparent,
                               child: Text(
-                                _viewModel.currentTrackInfo?.title ?? '未在播放',
-                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                                _viewModel.currentTrackInfo?.title ?? '还没有播放内容',
+                                style: Theme.of(context).textTheme.titleLarge,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                                 textAlign: TextAlign.center,
                               ),
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          if (_viewModel.currentTrackInfo?.artist != null)
-                            Text(
-                              _viewModel.currentTrackInfo!.artist,
-                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface
-                                        .withOpacity(0.7),
-                                  ),
-                              textAlign: TextAlign.center,
-                            ),
+                          const SizedBox(height: 7),
+                          Text(
+                            _viewModel.currentTrackInfo?.artist ??
+                                '点击封面区域可切换歌词',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: colors.onSurfaceVariant,
+                                ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                          ),
                         ],
                       ),
                     ),
                     const Spacer(),
-                    PlayerWorkInfo(context: _viewModel.currentContext),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: PlayerWorkInfo(context: _viewModel.currentContext),
+                    ),
                   ],
                 );
               },
@@ -138,84 +126,104 @@ class _PlayerScreenState extends State<PlayerScreen> {
   Widget build(BuildContext context) {
     final lyricManager = GetIt.I<LyricOverlayManager>();
     final wakeLockController = GetIt.I<WakeLockController>();
+    final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.expand_more),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
+        backgroundColor: Colors.transparent,
+        leading: Padding(
+          padding: const EdgeInsets.all(5),
+          child: IconButton.filledTonal(
+            tooltip: '收起播放器',
+            icon: const Icon(Icons.keyboard_arrow_down_rounded),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.info_outline),
+            tooltip: '作品信息',
+            icon: const Icon(Icons.info_outline_rounded),
             onPressed: () {
-              final currentWork = _viewModel.currentContext?.work;
-              if (currentWork != null) {
+              final work = _viewModel.currentContext?.work;
+              if (work != null) {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) => DetailScreen(
-                      work: currentWork,
-                      fromPlayer: true,
-                    ),
+                    builder: (_) => DetailScreen(work: work, fromPlayer: true),
                   ),
                 );
               }
             },
           ),
           IconButton(
+            tooltip: lyricManager.isShowing ? '关闭悬浮歌词' : '开启悬浮歌词',
             icon: Icon(
-              lyricManager.isShowing ? Icons.lyrics : Icons.lyrics_outlined,
+              lyricManager.isShowing
+                  ? Icons.lyrics_rounded
+                  : Icons.lyrics_outlined,
             ),
             onPressed: () => lyricManager.toggle(context),
           ),
           ListenableBuilder(
             listenable: wakeLockController,
-            builder: (context, _) {
-              return IconButton(
-                icon: Icon(
-                  wakeLockController.enabled 
-                    ? Icons.lightbulb
-                    : Icons.lightbulb_outline,
-                ),
-                tooltip: wakeLockController.enabled ? '关闭屏幕常亮' : '开启屏幕常亮',
-                onPressed: () => wakeLockController.toggle(),
-              );
-            },
+            builder: (context, _) => IconButton(
+              tooltip: wakeLockController.enabled ? '关闭屏幕常亮' : '开启屏幕常亮',
+              icon: Icon(
+                wakeLockController.enabled
+                    ? Icons.lightbulb_rounded
+                    : Icons.lightbulb_outline_rounded,
+              ),
+              onPressed: wakeLockController.toggle,
+            ),
           ),
+          const SizedBox(width: 6),
         ],
-        backgroundColor: Colors.transparent,
-        elevation: 0,
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  if (_canSwitchView) {
-                    setState(() {
-                      _showLyrics = !_showLyrics;
-                    });
-                  }
-                },
-                behavior: HitTestBehavior.opaque,
-                child: _buildContent(),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              colors.primaryContainer.withOpacity(0.34),
+              colors.surface,
+              colors.surface,
+            ],
+            stops: const [0, 0.34, 1],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    if (_canSwitchView)
+                      setState(() => _showLyrics = !_showLyrics);
+                  },
+                  child: _buildContent(),
+                ),
               ),
-            ),
-            Container(
-              padding: const EdgeInsets.fromLTRB(12, 0, 12, 32),
-              child: Column(
-                children: const [
-                  PlayerProgress(),
-                  SizedBox(height: 8),
-                  SizedBox(height: 8),
-                  PlayerControls(),
-                ],
+              Container(
+                margin: const EdgeInsets.fromLTRB(12, 8, 12, 14),
+                padding: const EdgeInsets.fromLTRB(12, 12, 12, 20),
+                decoration: BoxDecoration(
+                  color: colors.surfaceContainer.withOpacity(0.94),
+                  borderRadius: BorderRadius.circular(28),
+                  border:
+                      Border.all(color: colors.outlineVariant.withOpacity(0.5)),
+                ),
+                child: const Column(
+                  children: [
+                    PlayerProgress(),
+                    SizedBox(height: 12),
+                    PlayerControls(),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -16,13 +16,14 @@ class MiniPlayerProgress extends StatelessWidget {
         final progress = duration > 0 ? position / duration : 0.0;
 
         return SizedBox(
-          height: 2,
+          height: 3,
           child: LinearProgressIndicator(
-            value: progress,
+            value: progress.clamp(0.0, 1.0),
+            borderRadius: BorderRadius.circular(999),
             backgroundColor:
                 Theme.of(context).colorScheme.surfaceContainerHighest,
             valueColor: AlwaysStoppedAnimation<Color>(
-              Theme.of(context).colorScheme.primary,
+              Theme.of(context).colorScheme.secondary,
             ),
           ),
         );

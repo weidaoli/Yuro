@@ -14,59 +14,40 @@ class MiniPlayerCover extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final radius = BorderRadius.circular(15);
+
     if (coverUrl == null) {
-      return _buildEmptyPlaceholder();
+      return Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: colors.primaryContainer,
+          borderRadius: radius,
+        ),
+        child: Icon(Icons.graphic_eq_rounded, color: colors.primary),
+      );
     }
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(4),
+      borderRadius: radius,
       child: CachedNetworkImage(
         imageUrl: coverUrl!,
         width: size,
         height: size,
         fit: BoxFit.cover,
-        placeholder: (context, url) => _buildPlaceholder(context),
-        errorWidget: (context, url, error) => _buildErrorWidget(),
-      ),
-    );
-  }
-
-  Widget _buildEmptyPlaceholder() {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: const Icon(Icons.music_note, color: Colors.grey),
-    );
-  }
-
-  Widget _buildPlaceholder(BuildContext context) {
-    return Shimmer.fromColors(
-      baseColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-      highlightColor: Theme.of(context).colorScheme.surface,
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(4),
+        placeholder: (_, __) => Shimmer.fromColors(
+          baseColor: colors.surfaceContainerHighest,
+          highlightColor: colors.surfaceContainer,
+          child: Container(width: size, height: size, color: Colors.white),
+        ),
+        errorWidget: (_, __, ___) => Container(
+          width: size,
+          height: size,
+          color: colors.errorContainer,
+          child: Icon(Icons.broken_image_outlined, color: colors.error),
         ),
       ),
-    );
-  }
-
-  Widget _buildErrorWidget() {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: Colors.grey[300],
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: const Icon(Icons.broken_image, color: Colors.grey),
     );
   }
 }

@@ -11,9 +11,13 @@ class MiniPlayerControls extends StatelessWidget {
     return ListenableBuilder(
       listenable: viewModel,
       builder: (context, _) {
-        return IconButton(
+        return IconButton.filled(
+          iconSize: 21,
+          tooltip: viewModel.isPlaying ? '暂停' : '播放',
           icon: Icon(
-            viewModel.isPlaying ? Icons.pause : Icons.play_arrow,
+            viewModel.isPlaying
+                ? Icons.pause_rounded
+                : Icons.play_arrow_rounded,
           ),
           onPressed: viewModel.playPause,
         );

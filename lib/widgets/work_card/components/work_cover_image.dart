@@ -6,7 +6,6 @@ class WorkCoverImage extends StatelessWidget {
   final String imageUrl;
   final int workId;
   final String sourceId;
-  // 195/146 ≈ 1.336
   static const double _aspectRatio = 195 / 146;
 
   const WorkCoverImage({
@@ -18,50 +17,56 @@ class WorkCoverImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return AspectRatio(
       aspectRatio: _aspectRatio,
       child: Stack(
+        fit: StackFit.expand,
         children: [
-          Hero(
-            tag: 'work-cover-$workId',
-            child: CachedNetworkImage(
-              imageUrl: imageUrl,
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
-              placeholder: (context, url) => Shimmer.fromColors(
-                baseColor:
-                    Theme.of(context).colorScheme.surfaceContainerHighest,
-                highlightColor: Theme.of(context).colorScheme.surface,
-                child: Container(
-                  color: Colors.white,
-                ),
-              ),
-              errorWidget: (context, url, error) => Container(
-                color: Theme.of(context).colorScheme.errorContainer,
-                child: Center(
-                  child: Icon(
-                    Icons.error_outline,
-                    color: Theme.of(context).colorScheme.error,
-                  ),
-                ),
+          CachedNetworkImage(
+            imageUrl: imageUrl,
+            fit: BoxFit.cover,
+            placeholder: (_, __) => Shimmer.fromColors(
+              baseColor: colors.surfaceContainerHighest,
+              highlightColor: colors.surfaceContainer,
+              child: Container(color: Colors.white),
+            ),
+            errorWidget: (_, __, ___) => Container(
+              color: colors.errorContainer,
+              child:
+                  Icon(Icons.image_not_supported_outlined, color: colors.error),
+            ),
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withOpacity(0.15),
+                  Colors.transparent,
+                  Colors.black.withOpacity(0.24),
+                ],
+                stops: const [0, 0.56, 1],
               ),
             ),
           ),
           Positioned(
-            left: 8,
-            top: 8,
+            left: 9,
+            top: 9,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.7),
-                borderRadius: BorderRadius.circular(4),
+                color: Colors.black.withOpacity(0.58),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(color: Colors.white.withOpacity(0.18)),
               ),
               child: Text(
                 sourceId,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       color: Colors.white,
-                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
                     ),
               ),
             ),
